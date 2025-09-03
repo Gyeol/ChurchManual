@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회 메뉴얼 예상문제</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .today-counter {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .reset-today-btn {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-today-btn:hover {
+            background: rgba(255,255,255,0.5);
+            transform: rotate(180deg);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1em;
+        }
+        
+        .attempt-counter {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+        }
+        
+        .config-section {
+            padding: 25px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .config-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .config-group {
+            margin-bottom: 20px;
+        }
+        
+        .config-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .config-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .load-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .load-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .backup-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .backup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .backup-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: #2196f3;
+            color: white;
+        }
+        
+        .backup-btn:hover {
+            background: #1976d2;
+            transform: translateY(-1px);
+        }
+        
+        .restore-btn {
+            background: #4caf50 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .restore-btn:hover {
+            background: #388e3c !important;
+        }
+        
+        .clear-btn {
+            background: #f44336 !important;
+        }
+        
+        .clear-btn:hover {
+            background: #d32f2f !important;
+        }
+        
+        .backup-info {
+            font-size: 0.85em;
+            color: #1565c0;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .content {
+            padding: 25px 20px;
+            min-height: 400px;
+        }
+        
+        .problem-container {
+            margin-bottom: 25px;
+        }
+        
+        .problem-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            word-break: keep-all;
+        }
+        
+        .options {
+            margin-bottom: 25px;
+        }
+        
+        .option {
+            display: block;
+            margin: 12px 0;
+            padding: 15px 18px;
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            word-break: keep-all;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+        
+        .option:hover, .option:active {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .option.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .option.correct-answer {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            color: white !important;
+            border-color: #28a745 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .option.wrong-answer {
+            background: #fff;
+            color: #dc3545;
+            border-color: #dc3545;
+            border-width: 3px;
+            transform: translateY(-1px);
+        }
+        
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .input-answer.correct-answer {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+        
+        .input-answer.wrong-answer {
+            border-color: #dc3545;
+            border-width: 3px;
+            background: #fff;
+            color: #dc3545;
+        }
+        
+        .input-answer.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .input-answer {
+            width: 100%;
+            padding: 15px 18px;
+            font-size: 1.1em;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .input-answer:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .spacer {
+            flex: 1;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover, .btn-primary:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-hint {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+        
+        .btn-hint:hover, .btn-hint:active {
+            background: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        
+        .next-problem-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .next-problem-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .subjective-buttons {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .result.correct {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 2px solid #b8dabd;
+        }
+        
+        .result.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 2px solid #f1b0b7;
+        }
+        
+        .no-problems, .loading, .error {
+            text-align: center;
+            font-size: 1.2em;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 0.95em;
+        }
+        
+        .history-summary {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1em;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+        
+        .history-title {
+            font-weight: 600;
+            margin: 15px 0 10px 0;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.95em;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item.correct {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        }
+        
+        .history-item.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        }
+        
+        .history-status {
+            font-size: 1.2em;
+            min-width: 25px;
+        }
+        
+        .history-answer {
+            color: #495057;
+            font-weight: 500;
+            min-width: 100px;
+        }
+        
+        .history-correct {
+            color: #721c24;
+            font-weight: 500;
+        }
+        
+        .history-time {
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-left: auto;
+        }
+        
+        .no-history {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .stats-overview {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .stats-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #495057;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-card.solved {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        }
+        
+        .stat-card.progress {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+        }
+        
+        .stat-card.today {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #ffe0e0, #ffcccb);
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .stats-details {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .correct-color {
+            color: #28a745 !important;
+        }
+        
+        .incorrect-color {
+            color: #dc3545 !important;
+        }
+        
+        .today-color {
+            color: #007bff !important;
+        }
+        
+        .today-reset-section {
+            margin-top: 15px;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .today-reset-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .today-reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-secondary:hover, .btn-secondary:active {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.7em;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .attempt-counter {
+                position: static;
+                margin-top: 15px;
+                font-size: 0.85em;
+                display: inline-block;
+            }
+            
+            .today-counter {
+                position: static;
+                margin-bottom: 15px;
+                font-size: 0.8em;
+                justify-content: center;
+            }
+            
+            .config-section, .content {
+                padding: 20px 15px;
+            }
+            
+            .problem-text {
+                font-size: 1.1em;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .option {
+                padding: 12px 15px;
+                margin: 10px 0;
+                font-size: 0.95em;
+            }
+            
+            .input-answer {
+                padding: 12px 15px;
+                font-size: 1em;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .spacer {
+                display: none;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 14px 20px;
+                font-size: 1em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+            
+            .config-input {
+                font-size: 16px; /* iOS 줌 방지 */
+            }
+            
+            /* 모바일 히스토리 최적화 */
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                padding: 10px 12px;
+            }
+            
+            .history-status {
+                align-self: flex-start;
+            }
+            
+            .history-time {
+                margin-left: 0;
+                font-size: 0.8em;
+            }
+            
+            .history-list {
+                max-height: 250px;
+            }
+            
+            .backup-buttons {
+                flex-direction: column;
+            }
+            
+            .backup-btn {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            /* 모바일 통계 최적화 */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stat-card {
+                padding: 15px 10px;
+            }
+            
+            .stat-number {
+                font-size: 1.6em;
+            }
+            
+            .stat-label {
+                font-size: 0.8em;
+            }
+            
+            .stats-details {
+                padding: 15px;
+            }
+            
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                padding: 10px 0;
+            }
+        }
+        
+        /* 매우 작은 화면 (아이폰 SE 등) */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .problem-text {
+                font-size: 1em;
+                padding: 12px;
+            }
+            
+            .result {
+                font-size: 1.1em;
+                padding: 15px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .option:hover {
+                transform: none;
+                background: #fff;
+                border-color: #e9ecef;
+            }
+            
+            .btn-primary:hover, .btn-secondary:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="today-counter">
+                푼 문제: <span id="todayCount">0</span>개
+                <button class="reset-today-btn" id="resetTodayBtn" onclick="resetTodayCount()" title="푼 문제 카운트 초기화" style="display: none;">🔄</button>
+            </div>
+            <h1>📖 성경고사 문제풀이</h1>
+            <div class="attempt-counter" id="attemptCounter" style="display: none;">
+                풀이 횟수: <span id="attemptCount">0</span>회
+            </div>
+        </div>
+        
+        <div class="config-section" id="configSection">
+            <div class="config-title">🔧 설정</div>
+            <div class="config-group">
+                <label class="config-label" for="csvPath">CSV 파일 경로:</label>
+                <input type="text" 
+                       id="csvPath" 
+                       class="config-input" 
+                       placeholder="예: problems_01.csv 또는 https://example.com/problems.csv"
+                       value="problems_01.csv">
+            </div>
+            <button class="load-btn" onclick="loadCSVFromPath()">문제 불러오기</button>
+            
+            <div class="backup-section">
+                <div class="config-title">💾 진행률 백업/복원</div>
+                <div class="backup-buttons">
+                    <button class="backup-btn" onclick="exportProgress()">📥 진행률 다운로드</button>
+                    <label class="backup-btn restore-btn">
+                        📤 진행률 복원
+                        <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="importProgress(event)">
+                    </label>
+                    <button class="backup-btn clear-btn" onclick="clearAllProgress()">🗑️ 모든 기록 삭제</button>
+                </div>
+                <div class="backup-info">
+                    다른 기기에서 같은 진행률을 사용하려면 백업 파일을 다운로드하고 복원하세요.
+                </div>
+            </div>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="no-problems">
+                CSV 파일 경로를 입력하고 "문제 불러오기" 버튼을 클릭해주세요.<br><br>
+                <strong>CSV 파일 형식:</strong><br>
+                • B열에 문제, D열에 답<br>
+                • ①②③④ 기호가 있으면 객관식, 없으면 주관식
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let problems = [];
+        let currentProblem = null;
+        let currentProblemIndex = -1;
+        let problemStats = {};
+        let selectedOption = null;
+        let csvPath = '';
+        let hasAnswered = false;
+        
+        // 다음 문제 버튼 활성화/비활성화
+        function enableNextButton() {
+            const nextBtn = document.getElementById('nextProblemBtn');
+            if (nextBtn) {
+                nextBtn.disabled = false;
+            }
+        }
+        
+        function disableNextButton() {
+            const nextBtn = document.getElementById('nextProblemBtn');
+            if (nextBtn) {
+                nextBtn.disabled = true;
+            }
+        }
+        
+        // 오늘 푼 문제 카운트 가져오기 (날짜와 무관하게 누적)
+        function getTodayCount() {
+            return parseInt(localStorage.getItem('todayCount') || '0');
+        }
+        
+        // 전체 카운트 합계 가져오기
+        function getTotalCount() {
+            return parseInt(localStorage.getItem('totalCount') || '0');
+        }
+        
+        // 전체 카운트 증가
+        function incrementTotalCount(amount = 1) {
+            const currentTotal = getTotalCount();
+            localStorage.setItem('totalCount', (currentTotal + amount).toString());
+        }
+        
+        // 오늘 푼 문제 카운트 증가
+        function incrementTodayCount() {
+            const currentCount = getTodayCount();
+            localStorage.setItem('todayCount', (currentCount + 1).toString());
+            updateTodayDisplay();
+        }
+        
+        // 오늘 카운트 표시 업데이트
+        function updateTodayDisplay() {
+            const todayCountSpan = document.getElementById('todayCount');
+            if (todayCountSpan) {
+                todayCountSpan.textContent = getTodayCount();
+            }
+        }
+        
+        // 오늘 푼 문제 카운트 초기화 (수동으로만 실행)
+        function resetTodayCount() {
+            const todayCount = getTodayCount();
+            
+            if (todayCount === 0) {
+                alert('초기화할 카운트가 없습니다.');
+                return;
+            }
+            
+            const confirmed = confirm(
+                '⚠️ 정말로 오늘 푼 문제 카운트를 초기화하시겠습니까?\n\n' +
+                '현재 오늘 푼 문제: ' + todayCount + '문제\n' +
+                '이 카운트가 전체 카운트 합계에 추가됩니다.'
+            );
+            
+            if (confirmed) {
+                // 오늘 카운트를 전체 카운트에 추가
+                incrementTotalCount(todayCount);
+                
+                // 오늘 카운트 초기화
+                localStorage.setItem('todayCount', '0');
+                updateTodayDisplay();
+                
+                // 통계 화면이 열려있다면 새로고침
+                const isConfigOpen = document.getElementById('configSection').style.display !== 'none';
+                if (isConfigOpen) {
+                    showConfig();
+                }
+                
+                alert(`✅ 오늘 푼 문제 카운트가 초기화되었습니다!\n전체 카운트 합계: ${getTotalCount()}문제`);
+            }
+        }
+        
+        // 로컬 스토리지에서 데이터 로드
+        function loadProblemStats() {
+            // 한글 안전 인코딩
+            const pathKey = 'problemStats_' + encodeURIComponent(csvPath);
+            const saved = localStorage.getItem(pathKey);
+            if (saved) {
+                try {
+                    problemStats = JSON.parse(saved);
+                } catch (e) {
+                    console.error('저장된 데이터 로드 실패:', e);
+                    problemStats = {};
+                }
+            }
+        }
+        
+        // 로컬 스토리지에 데이터 저장
+        function saveProblemStats() {
+            try {
+                // 한글 안전 인코딩
+                const pathKey = 'problemStats_' + encodeURIComponent(csvPath);
+                localStorage.setItem(pathKey, JSON.stringify(problemStats));
+            } catch (e) {
+                console.error('데이터 저장 실패:', e);
+            }
+        }
+        
+        // 문제 통계 초기화 (간소화)
+        function initProblemStat(problemId) {
+            if (!problemStats[problemId]) {
+                problemStats[problemId] = {
+                    attempts: 0  // 시도 횟수만 기록
+                };
+            }
+        }
+        
+        // 답안 기록 추가 (간소화)
+        function addAnswerRecord(problemId) {
+            initProblemStat(problemId);
+            problemStats[problemId].attempts++;
+            saveProblemStats();
+        }
+        
+        // 히스토리 HTML 생성 (간소화)
+        function generateHistoryHTML(problemId) {
+            const stat = problemStats[problemId];
+            if (!stat || stat.attempts === 0) {
+                return '<div class="no-history">📝 아직 풀이 기록이 없습니다.</div>';
+            }
+            
+            let html = `
+                <div class="history-summary">
+                    📊 <strong>총 ${stat.attempts}번 시도</strong>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // Enter 키로 파일 로드
+        document.getElementById('csvPath').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                loadCSVFromPath();
+            }
+        });
+        
+        async function loadCSVFromPath() {
+            const pathInput = document.getElementById('csvPath');
+            const path = pathInput.value.trim();
+            
+            if (!path) {
+                alert('CSV 파일 경로를 입력해주세요.');
+                return;
+            }
+            
+            csvPath = path;
+            const content = document.getElementById('content');
+            const loadBtn = document.querySelector('.load-btn');
+            
+            content.innerHTML = '<div class="loading">📂 파일을 읽는 중...</div>';
+            loadBtn.disabled = true;
+            loadBtn.textContent = '로딩 중...';
+            
+            try {
+                let csvData;
+                
+                // URL인지 로컬 파일인지 판단
+                if (path.startsWith('http://') || path.startsWith('https://')) {
+                    const response = await fetch(path);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    csvData = await response.text();
+                } else {
+                    // 로컬 파일의 경우 fetch 시도
+                    const response = await fetch(path);
+                    if (!response.ok) {
+                        throw new Error(`파일을 찾을 수 없습니다: ${path}`);
+                    }
+                    csvData = await response.text();
+                }
+                
+                Papa.parse(csvData, {
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        parseProblems(results.data);
+                        loadBtn.disabled = false;
+                        loadBtn.textContent = '문제 불러오기';
+                    },
+                    error: function(error) {
+                        showError('CSV 파싱 오류: ' + error.message);
+                        loadBtn.disabled = false;
+                        loadBtn.textContent = '문제 불러오기';
+                    }
+                });
+                
+            } catch (error) {
+                showError('파일 로드 실패: ' + error.message);
+                loadBtn.disabled = false;
+                loadBtn.textContent = '문제 불러오기';
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    ❌ ${message}<br><br>
+                    <strong>해결 방법:</strong><br>
+                    • 파일 경로가 정확한지 확인<br>
+                    • 파일이 같은 폴더에 있는지 확인<br>
+                    • HTTP(S) URL의 경우 CORS 정책 확인
+                </div>
+            `;
+        }
+        
+        function parseProblems(data) {
+            problems = [];
+            loadProblemStats();
+            
+            // 첫 번째 행은 헤더로 건너뛰고, 2행부터 시작
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                // B열(index 1)에 문제, D열(index 3)에 정답이 있는지 확인
+                if (row.length > 3 && row[1] && row[3]) { 
+                    // 한글 안전 ID 생성
+                    const problemId = 'problem_' + i + '_' + encodeURIComponent(row[1]).slice(0, 20);
+                    const problem = {
+                        id: problemId,
+                        question: row[1].trim(),
+                        answer: row[3].toString().trim(), // 숫자도 문자열로 변환
+                        type: detectProblemType(row[1])
+                    };
+                    problems.push(problem);
+                    
+                    // 새로운 문제라면 통계 초기화
+                    initProblemStat(problemId);
+                }
+            }
+            
+            if (problems.length === 0) {
+                document.getElementById('content').innerHTML = 
+                    '<div class="error">올바른 형식의 문제를 찾을 수 없습니다.<br>B열에 문제, D열에 답이 있는지 확인해주세요.</div>';
+                return;
+            }
+            
+            console.log(`✅ 총 ${problems.length}개의 문제를 불러왔습니다!`);
+            document.getElementById('configSection').style.display = 'none';
+            showRandomProblem();
+        }
+        
+        function detectProblemType(questionText) {
+            // ①②③④ 기호가 있으면 객관식
+            const hasChoiceSymbols = /[①②③④⑤]/g.test(questionText);
+            return hasChoiceSymbols ? 'multiple' : 'subjective';
+        }
+        
+        function showRandomProblem() {
+            if (problems.length === 0) return;
+            
+            currentProblemIndex = Math.floor(Math.random() * problems.length);
+            currentProblem = problems[currentProblemIndex];
+            hasAnswered = false;
+            
+            updateAttemptCounter();
+            renderProblem();
+        }
+        
+        function updateAttemptCounter() {
+            const counter = document.getElementById('attemptCounter');
+            const countSpan = document.getElementById('attemptCount');
+            const stat = problemStats[currentProblem.id];
+            countSpan.textContent = stat ? stat.attempts : 0;
+            counter.style.display = 'block';
+        }
+        
+        function renderProblem() {
+            const content = document.getElementById('content');
+            selectedOption = null;
+            
+            // 문제 풀이 중에는 리셋 버튼 숨기기
+            document.getElementById('resetTodayBtn').style.display = 'none';
+            
+            // 객관식인 경우 문제 텍스트에서 선택지 부분 제거
+            const displayQuestion = currentProblem.type === 'multiple' 
+                ? getQuestionTextOnly(currentProblem.question)
+                : currentProblem.question;
+            
+            let html = `
+                <div class="problem-container">
+                    <div class="problem-text">${displayQuestion}</div>
+            `;
+            
+            if (currentProblem.type === 'multiple') {
+                html += renderMultipleChoice();
+            } else {
+                html += renderSubjective();
+            }
+            
+            html += `
+                    <div class="buttons">
+                        <button class="btn btn-hint" onclick="showAnswer()">💡 정답 확인</button>
+                        <button class="btn btn-secondary" id="nextProblemBtn" onclick="nextProblem()" disabled>다음 문제</button>
+                        <div class="spacer"></div>
+                        <button class="btn btn-secondary" onclick="showConfig()" style="background: #17a2b8;">메인 화면</button>
+                    </div>
+                    <div id="result"></div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        function renderMultipleChoice() {
+            const options = extractOptions(currentProblem.question);
+            let html = '<div class="options">';
+            
+            options.forEach((option, index) => {
+                const symbol = ['①', '②', '③', '④', '⑤'][index];
+                html += `
+                    <div class="option" onclick="selectOption(${index + 1})">
+                        ${symbol} ${option}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function renderSubjective() {
+            return `
+                <input type="text" 
+                       id="subjectiveAnswer" 
+                       class="input-answer" 
+                       placeholder="답을 입력하세요..."
+                       onkeypress="handleSubjectiveKeyPress(event)">
+                <div class="subjective-buttons">
+                    <button class="btn btn-primary" onclick="submitSubjectiveAnswer()">답안 제출</button>
+                </div>
+            `;
+        }
+        
+        function handleSubjectiveKeyPress(event) {
+            if (event.key === 'Enter') {
+                submitSubjectiveAnswer();
+            }
+        }
+        
+        function submitSubjectiveAnswer() {
+            const input = document.getElementById('subjectiveAnswer');
+            const userAnswer = input.value.trim();
+            if (userAnswer) {
+                checkAnswerInstantSubjective(userAnswer);
+            } else {
+                alert('답을 입력해주세요!');
+            }
+        }
+        
+        function checkAnswerInstantSubjective(userAnswer) {
+            const correctAnswer = currentProblem.answer.toString().trim();
+            const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+            
+            // 입력창 색깔 변경 및 비활성화
+            const input = document.getElementById('subjectiveAnswer');
+            input.classList.add('disabled');
+            
+            // 답안 제출 버튼 숨기기
+            const submitBtn = document.querySelector('.subjective-buttons');
+            if (submitBtn) {
+                submitBtn.style.display = 'none';
+            }
+            
+            const resultDiv = document.getElementById('result');
+            
+            if (isCorrect) {
+                // 정답인 경우: 시도 횟수 증가 및 카운터 업데이트
+                addAnswerRecord(currentProblem.id);
+                updateAttemptCounter();
+                
+                input.classList.add('correct-answer');
+                
+                // 다음 문제 버튼 활성화
+                enableNextButton();
+                
+                resultDiv.innerHTML = `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="next-problem-btn" onclick="nextProblem()">다음 문제 →</button>
+                    </div>
+                `;
+            } else {
+                input.classList.add('wrong-answer');
+                resultDiv.innerHTML = `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="retrySubjective()">다시 시도</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function retrySubjective() {
+            // 입력 초기화하고 다시 시도
+            const input = document.getElementById('subjectiveAnswer');
+            input.value = '';
+            input.classList.remove('disabled', 'correct-answer', 'wrong-answer');
+            
+            // 답안 제출 버튼 다시 보이기
+            const submitBtn = document.querySelector('.subjective-buttons');
+            if (submitBtn) {
+                submitBtn.style.display = 'block';
+            }
+            
+            document.getElementById('result').innerHTML = '';
+            input.focus();
+        }
+        
+        function showAnswer() {
+            const correctAnswer = currentProblem.answer.toString().trim();
+            
+            if (currentProblem.type === 'multiple') {
+                // 객관식: 정답 선택지 표시하고 모든 선택지 비활성화
+                const options = document.querySelectorAll('.option');
+                options.forEach((opt, index) => {
+                    opt.classList.add('disabled');
+                    opt.classList.remove('selected'); // selected 클래스 제거
+                    if (index + 1 === parseInt(correctAnswer)) {
+                        opt.classList.add('correct-answer');
+                    }
+                });
+            } else {
+                // 주관식: 정답 입력창에 표시
+                const input = document.getElementById('subjectiveAnswer');
+                input.value = correctAnswer;
+                input.classList.add('correct-answer', 'disabled');
+                
+                // 답안 제출 버튼 숨기기
+                const submitBtn = document.querySelector('.subjective-buttons');
+                if (submitBtn) {
+                    submitBtn.style.display = 'none';
+                }
+            }
+            
+            // 정답 확인 시 시도 횟수 증가 및 카운터 업데이트
+            addAnswerRecord(currentProblem.id);
+            updateAttemptCounter();
+            
+            // 다음 문제 버튼 활성화
+            enableNextButton();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="next-problem-btn" onclick="nextProblem()">다음 문제 →</button>
+                </div>
+            `;
+        }
+        
+        function extractOptions(questionText) {
+            const symbols = ['①', '②', '③', '④', '⑤'];
+            const options = [];
+            
+            for (let i = 0; i < symbols.length; i++) {
+                const currentSymbol = symbols[i];
+                const nextSymbol = symbols[i + 1];
+                
+                const startIndex = questionText.indexOf(currentSymbol);
+                if (startIndex === -1) break;
+                
+                let endIndex;
+                if (nextSymbol) {
+                    endIndex = questionText.indexOf(nextSymbol);
+                    if (endIndex === -1) endIndex = questionText.length;
+                } else {
+                    endIndex = questionText.length;
+                }
+                
+                // 선택지 텍스트 추출 (특수문자 제외하고 내용만)
+                let optionText = questionText.substring(startIndex + 1, endIndex).trim();
+                
+                // 줄바꿈, 탭, 연속된 공백 정리
+                optionText = optionText.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+                
+                if (optionText) {
+                    options.push(optionText);
+                }
+            }
+            
+            return options;
+        }
+        
+        // 문제 텍스트에서 선택지 부분 제거하는 함수
+        function getQuestionTextOnly(questionText) {
+            const firstChoiceIndex = questionText.search(/[①②③④⑤]/);
+            if (firstChoiceIndex !== -1) {
+                // 첫 번째 선택지 기호 이전까지만 반환
+                return questionText.substring(0, firstChoiceIndex).trim();
+            }
+            return questionText.trim();
+        }
+        
+        function selectOption(optionNumber) {
+            // 이미 정답을 맞춘 상태라면 클릭 무시
+            if (document.querySelector('.option.correct-answer')) {
+                return;
+            }
+            
+            // 이전 선택 초기화 (오답 표시 제거)
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected', 'wrong-answer');
+            });
+            
+            // 새로운 선택
+            const options = document.querySelectorAll('.option');
+            if (options[optionNumber - 1]) {
+                options[optionNumber - 1].classList.add('selected');
+                selectedOption = optionNumber;
+                
+                // 즉시 정답 체크
+                checkAnswerInstant(optionNumber);
+            }
+        }
+        
+        function checkAnswerInstant(userAnswer) {
+            const correctAnswer = parseInt(currentProblem.answer.toString().trim());
+            const isCorrect = parseInt(userAnswer) === correctAnswer;
+            
+            const options = document.querySelectorAll('.option');
+            const resultDiv = document.getElementById('result');
+            
+            if (isCorrect) {
+                // 정답인 경우: 시도 횟수 증가 및 카운터 업데이트
+                addAnswerRecord(currentProblem.id);
+                updateAttemptCounter();
+                
+                // 모든 선택지 비활성화하고 정답 표시
+                options.forEach((opt, index) => {
+                    opt.classList.add('disabled');
+                    opt.classList.remove('selected'); // selected 클래스 제거
+                    if (index + 1 === correctAnswer) {
+                        opt.classList.add('correct-answer');
+                    }
+                });
+                
+                // 다음 문제 버튼 활성화
+                enableNextButton();
+                
+                resultDiv.innerHTML = `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="next-problem-btn" onclick="nextProblem()">다음 문제 →</button>
+                    </div>
+                `;
+            } else {
+                // 오답인 경우: 선택한 것만 빨간색 표시, 다른 선택지는 계속 선택 가능
+                options.forEach((opt, index) => {
+                    if (index + 1 === parseInt(userAnswer)) {
+                        opt.classList.add('wrong-answer');
+                        opt.classList.remove('selected'); // selected 클래스 제거
+                    }
+                });
+                
+                // 결과 영역은 비워둠 (다시 시도 버튼 없음)
+                resultDiv.innerHTML = '';
+            }
+        }
+        
+        function retryProblem() {
+            // 선택 초기화하고 다시 시도
+            selectedOption = null;
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected', 'disabled', 'correct-answer', 'wrong-answer');
+            });
+            document.getElementById('result').innerHTML = '';
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        }
+        
+        function checkAnswer() {
+            let userAnswer = '';
+            
+            if (currentProblem.type === 'multiple') {
+                if (selectedOption === null) {
+                    alert('답을 선택해주세요!');
+                    return;
+                }
+                userAnswer = selectedOption.toString();
+            } else {
+                const input = document.getElementById('subjectiveAnswer');
+                userAnswer = input.value.trim();
+                if (!userAnswer) {
+                    alert('답을 입력해주세요!');
+                    return;
+                }
+            }
+            
+            const correctAnswer = currentProblem.answer.toString().trim();
+            const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+            
+            showResult(isCorrect, correctAnswer);
+            hasAnswered = true;
+        }
+        
+        function showResult(isCorrect, correctAnswer) {
+            const resultDiv = document.getElementById('result');
+            
+            // 답안 기록 추가
+            let userAnswer = '';
+            if (currentProblem.type === 'multiple') {
+                userAnswer = selectedOption.toString();
+            } else {
+                userAnswer = document.getElementById('subjectiveAnswer').value.trim();
+            }
+            
+            let resultHTML = '';
+            if (isCorrect) {
+                resultHTML = '<div class="result correct">🎉 정답입니다! 잘했어요!</div>';
+            } else {
+                resultHTML = `
+                    <div class="result incorrect">
+                        ❌ 틀렸습니다.<br>
+                        정답: <strong>${correctAnswer}</strong>
+                    </div>
+                `;
+            }
+            
+            // 히스토리 추가
+            resultHTML += `
+                <div class="result-section">
+                    <div class="history-title">📈 이 문제 풀이 기록</div>
+                    ${generateHistoryHTML(currentProblem.id)}
+                </div>
+            `;
+            
+            resultDiv.innerHTML = resultHTML;
+            
+            // 스크롤을 결과로 이동
+            setTimeout(() => {
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+        
+        function nextProblem() {
+            // 다음 문제로 넘어갈 때 푼 문제 카운트만 증가
+            incrementTodayCount();
+            showRandomProblem();
+        }
+        
+        function showConfig() {
+            document.getElementById('configSection').style.display = 'block';
+            document.getElementById('attemptCounter').style.display = 'none';
+            
+            // 설정 화면에서는 리셋 버튼 표시
+            document.getElementById('resetTodayBtn').style.display = 'flex';
+            
+            // 전체 통계 계산 및 표시
+            const totalStats = calculateTotalStats();
+            document.getElementById('content').innerHTML = `
+                <div class="stats-overview">
+                    <div class="stats-title">📊 전체 통계</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">${totalStats.totalProblems}</div>
+                            <div class="stat-label">전체 문제</div>
+                        </div>
+                        <div class="stat-card today">
+                            <div class="stat-number">${totalStats.currentCount}</div>
+                            <div class="stat-label">현재 푼 문제</div>
+                        </div>
+                        <div class="stat-card progress">
+                            <div class="stat-number">${totalStats.accumulatedTotal}</div>
+                            <div class="stat-label">누적 합계</div>
+                        </div>
+                    </div>
+                    <div class="stats-details">
+                        <div class="detail-item">
+                            <span class="detail-label">현재 푼 문제:</span>
+                            <span class="detail-value today-color">${getTodayCount()}문제</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">누적 합계:</span>
+                            <span class="detail-value correct-color">${getTotalCount()}문제</span>
+                        </div>
+                        <div class="today-reset-section">
+                            <button class="today-reset-btn" onclick="resetTodayCount()">🔄 푼 문제 카운트 초기화</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-problems">
+                    설정을 변경하고 새로운 문제 파일을 불러오세요.
+                </div>
+            `;
+        }
+        
+        // 전체 통계 계산
+        function calculateTotalStats() {
+            const totalProblems = problems ? problems.length : 0;
+            const currentCount = getTodayCount(); // 현재 푼 문제
+            const accumulatedTotal = getTotalCount(); // 누적 합계
+            
+            return {
+                totalProblems: totalProblems,
+                currentCount: currentCount || 0,
+                accumulatedTotal: accumulatedTotal || 0
+            };
+        }
+        
+        // 진행률 백업 기능
+        function exportProgress() {
+            const allData = {};
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('problemStats_') || key === 'lastCSVPath' || key === 'totalCount' || key === 'todayCount') {
+                    allData[key] = localStorage.getItem(key);
+                }
+            }
+            
+            if (Object.keys(allData).length === 0) {
+                alert('저장된 진행률 데이터가 없습니다.');
+                return;
+            }
+            
+            const backupData = {
+                version: '2.0',
+                timestamp: new Date().toISOString(),
+                data: allData
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+                type: 'application/json'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `problem_progress_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('진행률이 다운로드되었습니다! 📥');
+        }
+        
+        function importProgress(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    if (!backupData.data) {
+                        throw new Error('올바르지 않은 백업 파일 형식입니다.');
+                    }
+                    
+                    const hasCurrentData = Object.keys(localStorage).some(key => 
+                        key.startsWith('problemStats_')
+                    );
+                    
+                    let shouldProceed = true;
+                    if (hasCurrentData) {
+                        shouldProceed = confirm(
+                            '현재 저장된 진행률이 있습니다.\n' +
+                            '복원하면 현재 데이터와 병합됩니다. 계속하시겠습니까?\n\n' +
+                            '※ 같은 문제의 경우 히스토리가 합쳐집니다.'
+                        );
+                    }
+                    
+                    if (!shouldProceed) return;
+                    
+                    let restoredCount = 0;
+                    for (const [key, value] of Object.entries(backupData.data)) {
+                        if (key.startsWith('problemStats_')) {
+                            const existingData = localStorage.getItem(key);
+                            if (existingData) {
+                                try {
+                                    const existing = JSON.parse(existingData);
+                                    const backup = JSON.parse(value);
+                                    
+                                    for (const [problemId, backupStat] of Object.entries(backup)) {
+                                        if (existing[problemId]) {
+                                            existing[problemId].attempts = Math.max(
+                                                existing[problemId].attempts || 0,
+                                                backupStat.attempts || 0
+                                            );
+                                        } else {
+                                            existing[problemId] = backupStat;
+                                        }
+                                    }
+                                    
+                                    localStorage.setItem(key, JSON.stringify(existing));
+                                } catch (e) {
+                                    localStorage.setItem(key, value);
+                                }
+                            } else {
+                                localStorage.setItem(key, value);
+                            }
+                            restoredCount++;
+                        } else {
+                            localStorage.setItem(key, value);
+                        }
+                    }
+                    
+                    if (currentProblem) {
+                        loadProblemStats();
+                        updateAttemptCounter();
+                        const statsDiv = document.querySelector('.stats');
+                        if (statsDiv) {
+                            const stat = problemStats[currentProblem.id];
+                            const attempts = stat ? stat.attempts : 0;
+                            statsDiv.innerHTML = `
+                                <div>📊 전체 문제: ${problems.length}개</div>
+                                <div>🎯 현재 문제 풀이 횟수: ${attempts}회</div>
+                            `;
+                        }
+                    }
+                    
+                    // 오늘 카운트 업데이트
+                    updateTodayDisplay();
+                    
+                    alert(`진행률이 성공적으로 복원되었습니다! 📤\n복원된 파일: ${restoredCount}개`);
+                    
+                } catch (error) {
+                    alert('백업 파일을 읽을 수 없습니다.\n오류: ' + error.message);
+                }
+                
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function clearAllProgress() {
+            const hasData = Object.keys(localStorage).some(key => 
+                key.startsWith('problemStats_')
+            );
+            
+            if (!hasData) {
+                alert('삭제할 진행률 데이터가 없습니다.');
+                return;
+            }
+            
+            const confirmed = confirm(
+                '⚠️ 정말로 모든 풀이 기록을 삭제하시겠습니까?\n\n' +
+                '이 작업은 되돌릴 수 없습니다.\n' +
+                '삭제하기 전에 백업을 권장합니다.'
+            );
+            
+            if (confirmed) {
+                const keysToDelete = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('problemStats_')) {
+                        keysToDelete.push(key);
+                    }
+                }
+                
+                keysToDelete.forEach(key => localStorage.removeItem(key));
+                
+                problemStats = {};
+                if (currentProblem) {
+                    updateAttemptCounter();
+                }
+                
+                alert('모든 풀이 기록이 삭제되었습니다. 🗑️');
+            }
+        }
+        
+        // 키보드 단축키
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && event.ctrlKey) {
+                event.preventDefault();
+                nextProblem();
+            } else if (event.key === 'Enter' && !document.activeElement.matches('input, textarea')) {
+                event.preventDefault();
+                if (document.querySelector('.btn-primary')) {
+                    checkAnswer();
+                }
+            }
+        });
+        
+        // 페이지 로드 시 저장된 경로가 있으면 자동 로드
+        window.addEventListener('load', function() {
+            const savedPath = localStorage.getItem('lastCSVPath');
+            if (savedPath) {
+                document.getElementById('csvPath').value = savedPath;
+            }
+            
+            // 푼 문제 카운트 표시 업데이트
+            updateTodayDisplay();
+            
+            // 초기 화면에서 리셋 버튼 표시 (설정 화면이므로)
+            document.getElementById('resetTodayBtn').style.display = 'flex';
+        });
+        
+        // 경로 변경 시 저장
+        document.getElementById('csvPath').addEventListener('change', function() {
+            localStorage.setItem('lastCSVPath', this.value);
+        });
+    </script>
+</body>
+</html>
